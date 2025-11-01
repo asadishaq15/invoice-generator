@@ -4,7 +4,7 @@
   <meta charset="utf-8"/>
   <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
   <title>Invoice Generator</title>
-  <!-- Load Tailwind CSS via CDN -->
+  <script crossorigin="anonymous" integrity="sha512-YcsIP+GdH2oZV6D5M/0W2b7z8QX6g5xg8c3E3p2+3p6m8bQm2J4j3o6gG8L5wWQjv5H0H0L8G3i2Fv6Q0x8lBw==" referrerpolicy="no-referrer" src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Configure Tailwind for custom colors (JS Consulting Navy/Red) -->
   <script>
@@ -47,7 +47,6 @@
       }
     }
     
-    /* Dashboard Input Panel Responsiveness */
     #input-panel {
       display: grid;
       gap: 1.5rem;
@@ -65,7 +64,6 @@
       }
     }
     
-    /* Custom Shadow for professional look */
     .shadow-custom {
       box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     }
@@ -460,38 +458,71 @@
         showMessage(`Invoice ${invoiceNumber} generated successfully.`);
       });
 
-      // DOWNLOAD BUTTON
+      // DOWNLOAD BUTTON - FIXED VERSION
       downloadBtn.addEventListener('click', async () => {
         try {
           const clientName = (document.getElementById('client-name')?.value || 'Invoice').trim() || 'Invoice';
           const fileName = `Inv_${clientName}.pdf`;
           const element = document.getElementById('invoice-preview');
           
-          // High-quality PDF options
-          const opt = {
-            margin: [10, 10, 10, 10], // in px
-            filename: fileName,
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { 
-              scale: 2, 
-              useCORS: true, 
-              backgroundColor: '#FFFFFF',
-              logging: false,
-              scrollX: 0,
-              scrollY: 0
-            },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-            pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-          };
-          
-          // Generate PDF
-          const pdf = await html2pdf().set(opt).from(element).save();
-          showMessage(`Saved ${fileName}`, false);
+          // Check if html2pdf is available
+          if (typeof html2pdf === 'undefined') {
+            // Try to dynamically load the library if it's not loaded
+            showMessage("PDF library not loaded. Trying to load it now...", true);
+            
+            // Create and append a new script element
+            const script = document.createElement('script');
+            script.src = "https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js";
+            script.onload = () => {
+              showMessage("PDF library loaded. Trying to generate PDF...");
+              generatePDF(element, fileName);
+            };
+            script.onerror = () => {
+              showMessage("Failed to load PDF library. Using browser print instead.", true);
+              // Fallback to browser print
+              window.print();
+            };
+            document.head.appendChild(script);
+          } else {
+            // Use html2pdf if it's already available
+            generatePDF(element, fileName);
+          }
         } catch (e) {
           console.error('PDF generation error:', e);
-          showMessage('Failed to generate PDF. Please try again.', true);
+          showMessage('Failed to generate PDF. Falling back to browser print.', true);
+          // Fallback to browser's print functionality
+          window.print();
         }
       });
+      
+      // Helper function for generating PDF
+      const generatePDF = (element, fileName) => {
+        // High-quality PDF options
+        const opt = {
+          margin: [10, 10, 10, 10], // in px
+          filename: fileName,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { 
+            scale: 2, 
+            useCORS: true, 
+            backgroundColor: '#FFFFFF',
+            logging: false,
+            scrollX: 0,
+            scrollY: 0
+          },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+          pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+        };
+        
+        // Generate PDF
+        html2pdf().set(opt).from(element).save()
+          .then(() => showMessage(`Saved ${fileName}`, false))
+          .catch(err => {
+            console.error('PDF generation failed:', err);
+            showMessage('PDF generation failed. Using browser print instead.', true);
+            window.print();
+          });
+      };
 
       // 3. Invoice HTML Template Function
       const generateInvoiceHtml = (data) => {
@@ -632,8 +663,5 @@
       };
     });
   </script>
-
-  <!-- html2pdf.js for pixel-perfect PDF (uses html2canvas + jsPDF) -->
-  <script crossorigin="anonymous" integrity="sha512-YcsIP+GdH2oZV6D5M/0W2b7z8QX6g5xg8c3E3p2+3p6m8bQm2J4j3o6gG8L5wWQjv5H0H0L8G3i2Fv6Q0x8lBw==" referrerpolicy="no-referrer" src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </body>
 </html>
