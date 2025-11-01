@@ -497,33 +497,37 @@
       
       // Helper function for generating PDF
       const generatePDF = (element, fileName) => {
-        // High-quality PDF options
-        const opt = {
-          margin: [10, 10, 10, 10], // in px
-          filename: fileName,
-          image: { type: 'jpeg', quality: 0.98 },
-          html2canvas: { 
-            scale: 2, 
-            useCORS: true, 
-            backgroundColor: '#FFFFFF',
-            logging: false,
-            scrollX: 0,
-            scrollY: 0
-          },
-          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-          pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-        };
-        
-        // Generate PDF
-        html2pdf().set(opt).from(element).save()
-          .then(() => showMessage(`Saved ${fileName}`, false))
-          .catch(err => {
-            console.error('PDF generation failed:', err);
-            showMessage('PDF generation failed. Using browser print instead.', true);
-            window.print();
-          });
-      };
-
+  // Optimized PDF options for single-page output
+  const opt = {
+    margin: [5, 5, 5, 5], // Reduced margins (top, right, bottom, left) in px
+    filename: fileName,
+    image: { type: 'jpeg', quality: 0.95 }, // Slightly reduced image quality
+    html2canvas: { 
+      scale: 1.25, // Reduced from 2 to 1.5 for better size control
+      useCORS: true, 
+      backgroundColor: '#FFFFFF',
+      logging: false,
+      scrollX: 0,
+      scrollY: 0
+    },
+    jsPDF: { 
+      unit: 'mm', 
+      format: 'a4', 
+      orientation: 'portrait',
+      compress: true // Enable compression
+    },
+    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+  };
+  
+  // Generate PDF
+  html2pdf().set(opt).from(element).save()
+    .then(() => showMessage(`Saved ${fileName}`, false))
+    .catch(err => {
+      console.error('PDF generation failed:', err);
+      showMessage('PDF generation failed. Using browser print instead.', true);
+      window.print();
+    });
+};
       // 3. Invoice HTML Template Function
       const generateInvoiceHtml = (data) => {
         // Generate services rows
@@ -540,8 +544,8 @@
           <div class="flex justify-between items-center pb-6 border-b border-gray-200">
             <div class="flex items-center space-x-4">
               <!-- Logo (Circular Style) -->
-              <div class="h-16 w-16 md:h-20 md:w-20 rounded-full bg-js-navy flex items-center justify-center overflow-hidden border-2 border-js-red shrink-0">
-                <img src="${MY_COMPANY.logoUrl}" alt="JS Consulting Logo" class="w-full h-full object-cover p-1" onerror="this.onerror=null;this.parentElement.innerHTML='<span class=\'text-white text-xs\'>JS</span>'">
+                  <div class="h-14 w-14 md:h-16 md:w-16 rounded-full bg-js-navy flex items-center justify-center overflow-hidden border-2 border-js-red shrink-0">
+                  <img src="${MY_COMPANY.logoUrl}" alt="JS Consulting Logo" class="w-full h-full object-cover p-1" onerror="this.onerror=null;this.parentElement.innerHTML='<span class=\'text-white text-xs\'>JS</span>'">
               </div>
               <div>
                 <h1 class="text-xl md:text-2xl font-extrabold text-js-navy">${MY_COMPANY.name}</h1>
@@ -573,8 +577,8 @@
           </div>
           
           <!-- Invoice Summary -->
-          <div class="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm font-semibold text-center bg-light-gray p-3 rounded-lg border border-gray-200">
-            <div>
+<div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-2 text-sm font-semibold text-center bg-light-gray p-2 rounded-lg border border-gray-200">
+              <div>
               <p class="text-gray-500">INVOICE NO.</p>
               <p class="text-js-navy ">${data.invoiceNumber}</p>
             </div>
@@ -593,7 +597,7 @@
           </div>
           
           <!-- Service Details Table -->
-          <div class="mt-8 overflow-x-auto">
+          <div class="mt-6 overflow-x-auto">
             <table class="min-w-full table-auto">
               <thead>
                 <tr class="bg-js-navy text-white text-left text-sm">
@@ -610,7 +614,7 @@
           </div>
           
           <!-- Totals & Payment Section -->
-          <div class="mt-8 flex justify-end">
+          <div class="mt-6 flex justify-end">
             <div class="w-full md:w-1/2">
               <div class="space-y-2 border border-gray-200 p-4 rounded-lg">
                 <!-- Subtotal -->
@@ -638,7 +642,7 @@
           </div>
           
           <!-- Bank Details and Signature -->
-          <div class="mt-12 pt-6 border-t border-gray-200 grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div class="mt-6 pt-6 border-t border-gray-200 grid grid-cols-1 md:grid-cols-2 gap-8">
             <!-- Bank Details -->
             <div>
               <h3 class="font-bold text-md text-js-navy mb-2">Payment Details</h3>
